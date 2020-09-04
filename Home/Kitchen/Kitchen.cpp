@@ -6,7 +6,6 @@ namespace Kitchen{
 	}
 	void listen() {
 		mainSwitch.listen();
-		tableLight.listen();
 	}
 	void loop() {
 		if (mainSwitch.onPress()) {

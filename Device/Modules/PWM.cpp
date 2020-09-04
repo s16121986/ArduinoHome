@@ -52,6 +52,8 @@ namespace Device{
 			} */
 		}
 		void on(uint8_t brightness) {
+			if (!isEnabled())
+				return;
 			if (brightness == 0) { //off
 				if (!isOn())
 					return;
@@ -110,8 +112,7 @@ namespace Device{
 				case C_ON: on(); break;
 				case C_OFF: off(); break;
 				case C_TOGGLE: toggle(); break;
-				case C_PWM_VALUE: on(data); break;
-				case C_PWM_BRIGHTNESS: on(data); break;
+				case C_PWM: on(data); break;
 				default: Module::trigger(action, data);
 			}
 		}

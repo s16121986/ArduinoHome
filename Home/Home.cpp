@@ -52,14 +52,15 @@ namespace Home{
 #ifdef Bathroom_h
 		Bathroom::setup();
 #endif
+#ifdef Bedroom_h
+		Bedroom::setup();
+#endif
 #ifdef Kitchen_h
 		Kitchen::setup();
 #endif
 #ifdef Balcony_h
 		Balcony::setup();
 #endif
-		delay(1000);
-		Device::sendData(T_HOME, 1); //pins request
 	}
 	void listen() {
 #ifdef Storage_h
@@ -70,6 +71,9 @@ namespace Home{
 #endif
 #ifdef Bathroom_h
 		Bathroom::listen();
+#endif
+#ifdef Bedroom_h
+		Bedroom::listen();
 #endif
 #ifdef Kitchen_h
 		Kitchen::listen();
@@ -96,6 +100,9 @@ namespace Home{
 #ifdef Bathroom_h
 		Bathroom::loop();
 #endif
+#ifdef Bedroom_h
+		Bedroom::loop();
+#endif
 #ifdef Kitchen_h
 		Kitchen::loop();
 #endif
@@ -116,6 +123,9 @@ namespace Home{
 #ifdef Bathroom_h
 		Bathroom::command(action, data);
 #endif
+#ifdef Bedroom_h
+		Bedroom::command(action, data);
+#endif
 #ifdef Kitchen_h
 		Kitchen::command(action, data);
 #endif
@@ -132,6 +142,9 @@ namespace Home{
 #endif
 #ifdef Bathroom_h
 		Bathroom::trigger(target, action, data);
+#endif
+#ifdef Bedroom_h
+		Bedroom::trigger(target, action, data);
 #endif
 #ifdef Kitchen_h
 		Kitchen::trigger(target, action, data);
@@ -150,7 +163,6 @@ namespace Home{
 			//case C_PWM_DELAY:
 			//	Device::PWM_DELAY = (int)data;
 			//	break;
-			case C_DEBUG: Device::debug(data); break;
 			case C_STATE: Device::state(); break;
 			case C_PING: Device::sendState(T_HOME, 1); break;
 		}

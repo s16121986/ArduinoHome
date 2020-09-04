@@ -7,12 +7,14 @@
 #include "Pins/mega.h"
 #endif
 
-#include "Modules/Module.cpp"
-#include "Modules/ModuleD.cpp"
-#include "Modules/ModuleA.cpp"
+#include "Modules/Util/Module.cpp"
+#include "Modules/Util/ModuleD.cpp"
+#include "Modules/Util/ModuleA.cpp"
 #include "Modules/Button.cpp"
 #include "Modules/Relay.cpp"
 #include "Modules/PWM.cpp"
+#include "Modules/Ping.cpp"
+#include "Modules/PWMD.cpp"
 	
 namespace Device{
 	
@@ -22,17 +24,18 @@ namespace Device{
 	namespace ST{
 		Button mainSwitch(M_ST_SWITCH);
 		Relay mainLight(M_ST_LIGHT);
+		PWMD vent(M_ST_VENTILATION);
 		//Gercon s(PIN_ST_DOOR);  //Датчик двери
 	}
 	namespace HL{
-		Relay mainLight(M_HL_LIGHT);         //PWM
-		Relay wallLight(M_HL_LIGHT_WALL);    //Подсветка стена
-		Relay hallLight(M_HL_LIGHT_HALL);       //Коридор 2шт PWM
-		//LightRelay hallLight(M_HL_LIGHT_3);       //Коридор 3шт PWM
-		PWM floorStrip(M_HL_FLOORSTRIP);     //Подсветка плинтус
+		Relay mainLight(M_HL_LIGHT);           //PWM
+		Relay wallLight(M_HL_LIGHT_WALL);      //Подсветка стена
+		PWMD hallLight(M_HL_LIGHT_HALL);       //Коридор 2шт PWM
+		//LightRelay hallLight(M_HL_LIGHT_3);  //Коридор 3шт PWM
+		PWM floorStrip(M_HL_FLOORSTRIP);       //Подсветка плинтус
 		
-		Button mainSwitch(M_HL_SWITCH);      //Выключатель
-		Button hallSwitch(M_HL_SWITCH_HALL);      //Выключатель
+		Button mainSwitch(M_HL_SWITCH);        //Выключатель
+		Button hallSwitch(M_HL_SWITCH_HALL);   //Выключатель
 		
 		//AutoMotion motionMain(M_HL_MOTION_MAIN, 10000); //Датчик движения пуфик
 	}
@@ -46,23 +49,28 @@ namespace Device{
 		Relay mainLight(M_BT_LIGHT);       //PWM
 		Relay wallLight(M_BT_LIGHT_WALL);
 		Relay fan(M_BT_FAN);
+		PWMD warmFloor(M_BT_WARMFLOOR);
 	}
 	namespace KH{
 		Button mainSwitch(M_KH_SWITCH);
-		Relay mainLight(M_KH_LIGHT);
+		PWMD mainLight(M_KH_LIGHT);
 		Relay lampLight(M_KH_LIGHT_LAMP);
-		Relay tableLight(M_KH_LIGHT_TABLE);
+		PWMD tableLight(M_KH_LIGHT_TABLE);
 		PWM floorLightning(M_KH_LIGHTNING_FLOOR);
 	}
 	namespace BL{
-		Relay mainLight(M_BL_LIGHT);   //PWN 
+		PWMD mainLight(M_BL_LIGHT);   //PWN 
 		Button mainSwitch(M_BL_SWITCH);  //Выключатель
+		Ping curtains(M_BL_CURTAINS);
+		PWMD warmFloor(M_BL_WARMFLOOR);
 	}
 	namespace BD{
 		Button mainSwitch(M_BD_SWITCH);  //Выключатель
-		Relay bedLight(M_BD_LIGHT_BED);
-		Relay christmasLight(M_BD_CHRISTMAS);
+		PWMD mainLight(M_BD_LIGHT);
+		PWMD bedLight(M_BD_LIGHT_BED);
+		//Relay christmasLight(M_BD_CHRISTMAS);
 		PWM bedLightning(M_BD_LIGHTNING_BED);
+		Ping curtains(M_BD_CURTAINS);
 	}
 	
 	bool hasPin(uint8_t pin) {
@@ -81,7 +89,28 @@ namespace Device{
 	}
 	
 	void setup() {
+		delay(1000);
+		Device::sendEvent(T_HOME, EVENT_INIT); //pins request
+	}
+	
+	void loop() {
+		//digital pwm loop
+		HL::hallLight.loop();
 		
+		BT::warmFloor.loop();
+		
+		KH::mainLight.loop();
+		KH::tableLight.loop();
+		
+		BL::mainLight.loop();
+		BL::warmFloor.loop();
+		BL::curtains.loop();
+		
+		BD::mainLight.loop();
+		BD::bedLight.loop();
+		BD::curtains.loop();
+		
+		ST::vent.loop();
 	}
 	
 	void state() {
@@ -91,7 +120,7 @@ namespace Device{
 		}
 	}
 	
-	void debug(uint8_t data) {
+	void debug(uint8_t action, uint8_t data) {
 		switch (data) {
 			case 0:
 				uint8_t buf[5];
@@ -110,6 +139,7 @@ namespace Device{
 			
 			case M_ST_SWITCH:          ST::mainSwitch.trigger(action, data); break;
 			case M_ST_LIGHT:           ST::mainLight.trigger(action, data); break;
+			case M_ST_VENTILATION:     ST::vent.trigger(action, data); break;
 			
 			case M_HL_LIGHT:           HL::mainLight.trigger(action, data); break;
 			case M_HL_LIGHT_WALL:      HL::wallLight.trigger(action, data); break;
@@ -133,10 +163,12 @@ namespace Device{
 			
 			case M_BL_SWITCH:          BL::mainSwitch.trigger(action, data); break;
 			case M_BL_LIGHT:           BL::mainLight.trigger(action, data); break;
+			case M_BL_CURTAINS:        BL::curtains.trigger(action, data); break;
 			
 			case M_BD_SWITCH:          BD::mainSwitch.trigger(action, data); break;
 			case M_BD_LIGHT_BED:       BD::bedLight.trigger(action, data); break;
 			case M_BD_LIGHTNING_BED:   BD::bedLightning.trigger(action, data); break;
+			case M_BD_CURTAINS:        BD::curtains.trigger(action, data); break;
 			
 #ifdef Home_h
 			default:

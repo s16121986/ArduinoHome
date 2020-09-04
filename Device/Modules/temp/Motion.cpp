@@ -13,6 +13,8 @@ public:
 	bool onHigh() {
 		if (isOn() && stateFlag) {
 			stateFlag = false;
+			if (EVENTS_MODE)
+				event(EVENT_MOTION_HIGH);
 			return true;
 		}
 		return false;
